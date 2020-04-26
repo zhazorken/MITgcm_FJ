@@ -1,0 +1,78 @@
+# Diagnostic Package Choices
+#
+# 2-D fields:
+# =================
+# 
+# ETAN     Perturbation of Surface (pressure, height) (Pa,m)
+# 
+# monthly 3-D fields:
+# ===================
+# 
+# SALTanom Salt anomaly (=SALT-35; g/kg)
+# THETA    Potential Temperature (degC,K)
+# UVELMASS Zonal Mass-Weighted Comp of Velocity (m/s)
+# VVELMASS Meridional Mass-Weighted Comp of Velocity (m/s)
+# WVELMASS Vertical Mass-Weighted Comp of Velocity (m/s)
+#
+ &diagnostics_list
+ fields(1,3)='UVEL',
+ fileName(3)='UVEL_inst',
+ frequency(3)=4.32000000e+03,
+ timePhase(3)=0.00000000e+00,
+ fields(1,5)='VVEL',
+ fileName(5)='VVEL_inst',
+ frequency(5)=4.32000000e+03,
+ timePhase(5)=0.00000000e+00,
+ fields(1,6)='WVEL',
+ fileName(6)='WVEL_inst',
+ frequency(6)=4.32000000e+03,
+ timePhase(6)=0.00000000e+00,
+ fields(1,7)='THETA',
+ fileName(7)='THETA_inst',
+ frequency(7)=4.32000000e+03,
+ timePhase(7)=0.00000000e+00,
+ fields(1,4)='SALT',
+ fileName(4)='SALT_inst',
+ frequency(4)=4.32000000e+03,
+ timePhase(4)=0.00000000e+00,
+   frequency(8) = 4.32000000e+03,
+    fields(1,8) = 'icefrntW',
+    filename(8) = 'icefrntW', 
+   frequency(9) = 4.32000000e+03,
+    fields(1,9) = 'icefrntT',
+    filename(9) = 'icefrntT',
+   frequency(10) = 4.32000000e+03,
+    fields(1,10) = 'icefrntS',
+    filename(10) = 'icefrntS',
+   frequency(11) = 4.32000000e+03,
+    fields(1,11) = 'icefrntR',
+    filename(11) = 'icefrntR',
+   frequency(12) = 4.32000000e+03,
+    fields(1,12) = 'icefrntM',
+    filename(12) = 'icefrntM',
+   frequency(13) = 4.32000000e+03,
+    fields(1,13) = 'icefrntA',
+    filename(13) = 'icefrntA', 
+ &
+
+# Parameter for Diagnostics of per level statistics:
+#-----------------
+# for each output-stream:
+#  stat_fname(n) : prefix of the output file name (only 8.c long) for
+#outp.stream n
+#  stat_freq(n):< 0 : write snap-shot output every |stat_freq| seconds
+#               > 0 : write time-average output every stat_freq seconds
+#  stat_phase(n)    : write at time = stat_phase + multiple of |stat_freq|
+#  stat_region(:,n) : list of "regions" (default: 1 region only=global)
+#  stat_fields(:,n) : list of diagnostics fields (8.c) (see
+#"available_diagnostics.log"
+#                 file for the list of all available diag. in this particular
+#config)
+#-----------------
+ &DIAG_STATIS_PARMS
+#- an example just to check the agreement with MONITOR output:
+#stat_fields(1,1)= 'ETAN    ','UVEL    ','VVEL    ','WVEL    ', 'THETA   ',
+#   stat_fname(1)= 'dynStDiag',
+#    stat_freq(1)= -864000.,
+#   stat_phase(1)= 0.,
+ &

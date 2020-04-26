@@ -1,0 +1,20 @@
+# ***************
+# Open boundaries
+# ***************
+ &OBCS_PARM01
+ useOBCSprescribe=.TRUE.,
+ useOBCSsponge=.TRUE.,
+ OB_Ieast  =   25*-1,
+ OBEtFile='EBCt.bin',
+ OBEsFile='EBCs.bin',
+ OBEuFile='EBCu.bin',
+ &
+
+# sponge layer
+ &OBCS_PARM03
+ spongeThickness=10,
+ Urelaxobcsbound=10.
+ Urelaxobcsinner=100000.,
+ Vrelaxobcsbound=10.
+ Vrelaxobcsinner=100000.,
+ &

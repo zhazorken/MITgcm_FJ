@@ -1,0 +1,14 @@
+# =====================
+# | gmredi parameters |
+# =====================
+
+# Parameters for gmredi package
+ &GM_PARM01
+ GM_isopycK=1.00000000e+02,
+ GM_background_K=1.00000000e+02,
+ GM_maxSlope=2.50000000e-02,
+ GM_taper_scheme='dm95',
+ GM_Scrit=2.50000000e-02,
+ GM_Sd=2.50000000e-03,
+ &
+
