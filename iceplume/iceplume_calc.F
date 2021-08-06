@@ -47,7 +47,7 @@ C     == Routine arguments ==
 
 C     !LOCAL VARIABLES:
 C     == Local variables ==
-C     I,J,K,bi,bj  :: loop indices
+C     I,J,K,bi,bj,di,dj  :: loop indices
 C     msgBuf       :: Informational/error message buffer
 C     sProf, tProf, uProf, vProf :: salt, pot. temperature and
 C                            uVel and vVel profiles
@@ -63,7 +63,7 @@ C     wVelCell, vVelCell, uVelCell :: velocities at cell centres
 C     meanVel :: ice tangental velocity
 C     rho_0 :: average density of seawater
 
-      INTEGER bi, bj
+      INTEGER di, dj, bi, bj
       INTEGER J, K, I
 
       _RL eps5
@@ -590,40 +590,198 @@ C into the correct locations in 3D arrays
 C Find temperature and salinity of plume outflow
              DO k = 1,Nr
                IF ( volFluxDiff(k) .GT. 0 ) THEN
-               temp_AddMass3D(I,J,K,bi,bj) = ! convert to potential temp
-     &          SW_PTMP(sProfPlume(k),tProfPlume(k),prProf(k),0. _d 0)
-               salt_AddMass3D(I,J,K,bi,bj) = sProfPlume(k)
+                DO di = I-13,I+13
+                 DO dj =NINT(J-sqrt(181.-(di-I)**2.)),
+     &                  NINT(J+sqrt(181.-(di-I)**2.)) 
+                 temp_AddMass3D(di,dj,K,bi,bj) = ! convert to potential temp
+     &           SW_PTMP(sProfPlume(k),tProfPlume(k),prProf(k),0. _d 0)
+                 salt_AddMass3D(di,dj,K,bi,bj) = sProfPlume(k)
+                 ENDDO
+                ENDDO 
 #ifdef ALLOW_PTRACERS
-               DO iTracer = 1,PTRACERS_num
-                ptr_AddMass3D(I,J,K,bi,bj,iTracer)
-     &                            = ptrPlume(iTracer)
-               ENDDO
+C               DO iTracer = 1,PTRACERS_num
+C                DO di = I-13,I+13 
+C                 DO dj =NINT(J-sqrt(181.-(di-I)**2.)),
+C     &                  NINT(J+sqrt(181.-(di-I)**2.)) 
+C                 ptr_AddMass3D(di,dj,K,bi,bj,iTracer)
+C     &                            = ptrPlume(iTracer)
+C                 ENDDO
+C                ENDDO 
+C               ENDDO
 #endif /* ALLOW_PTRACERS */
                ELSE 
-               temp_AddMass3D(I,J,K,bi,bj) = ptProf(k)
-               salt_AddMass3D(I,J,K,bi,bj) = sProf(k)
+                DO di = I-13,I+13 
+                 DO dj =NINT(J-sqrt(181.-(di-I)**2.)),
+     &                  NINT(J+sqrt(181.-(di-I)**2.)) 
+                 temp_AddMass3D(di,dj,K,bi,bj) = ptProf(k)
+                 salt_AddMass3D(di,dj,K,bi,bj) = sProf(k)
+                 ENDDO
+                ENDDO
 #ifdef ALLOW_PTRACERS
-               DO iTracer = 1,PTRACERS_num
-               ptr_AddMass3D(I,J,K,bi,bj,iTracer) 
-     &                            = ptrProf(k,iTracer)
-               ENDDO
+C               DO iTracer = 1,PTRACERS_num
+C                DO di = I-13,I+13 
+C                 DO dj NINT(J-sqrt(181.-(di-I)**2.)),
+C     &                 NINT(J+sqrt(181.-(di-I)**2.)) 
+C                 ptr_AddMass3D(di,dj,K,bi,bj,iTracer) 
+C     &                            = ptrProf(k,iTracer)
+C                 ENDDO
+C                ENDDO
+C               ENDDO
 #endif /* ALLOW_PTRACERS */
                ENDIF
 C Convert m3/s into kg/s
-             addMass(I,j,k,bi,bj) = volFLuxDiff(k)*1000 
-            ENDDO
 
-           ELSE
+             DO di = I-20,I+20
+                 DO dj =NINT(J-sqrt(400.-(di-I)**2.)),
+     &                  NINT(J+sqrt(400.-(di-I)**2.)) 
+                  IF ( k .LT. 3 .OR. k .GT. Nr-2) THEN
 
-           DO K = 1,Nr
-            temp_AddMass3D(I,J,K,bi,bj) = ptProf(k)
-            salt_AddMass3D(I,J,K,bi,bj) = sProf(k)
-            addMass(I,j,k,bi,bj) = 0.D0
-           ENDDO
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .1*volFLuxDiff(k)*1000./334.75 
+                  ELSE
+                addMass(di,dj,k-2,bi,bj) = addMass(di,dj,k-2,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k-1,bi,bj) = addMass(di,dj,k-1,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+1,bi,bj) = addMass(di,dj,k+1,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+2,bi,bj) = addMass(di,dj,k+2,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                  ENDIF
 
-           ENDIF
+              ENDDO
+             ENDDO
+
+             DO di = I-18,I+18
+                 DO dj =NINT(J-sqrt(324.-(di-I)**2.)),
+     &                  NINT(J+sqrt(324.-(di-I)**2.)) 
+                  IF ( k .LT. 3 .OR. k .GT. Nr-2) THEN
+
+                 addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .1*volFLuxDiff(k)*1000./334.75 
+                  ELSE
+                addMass(di,dj,k-2,bi,bj) = addMass(di,dj,k-2,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k-1,bi,bj) = addMass(di,dj,k-1,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+1,bi,bj) = addMass(di,dj,k+1,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+2,bi,bj) = addMass(di,dj,k+2,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                  ENDIF
+
+              ENDDO
+             ENDDO
+
+
+             DO di = I-16,I+16
+                 DO dj =NINT(J-sqrt(256.-(di-I)**2.)),
+     &                  NINT(J+sqrt(256.-(di-I)**2.)) 
+                  IF ( k .LT. 3 .OR. k .GT. Nr-2) THEN
+
+                 addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .1*volFLuxDiff(k)*1000./334.75 
+                  ELSE
+                addMass(di,dj,k-2,bi,bj) = addMass(di,dj,k-2,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k-1,bi,bj) = addMass(di,dj,k-1,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+1,bi,bj) = addMass(di,dj,k+1,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+2,bi,bj) = addMass(di,dj,k+2,bi,bj)+ 
+     &                                    .02*volFLuxDiff(k)*1000./334.75
+                  ENDIF
+
+              ENDDO
+             ENDDO
+
+
+             DO di = I-14,I+14
+                 DO dj =NINT(J-sqrt(196.-(di-I)**2.)),
+     &                  NINT(J+sqrt(196.-(di-I)**2.)) 
+                  IF ( k .LT. 3 .OR. k .GT. Nr-2) THEN
+
+                 addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .2*volFLuxDiff(k)*1000./334.75 
+                  ELSE
+                addMass(di,dj,k-2,bi,bj) = addMass(di,dj,k-2,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k-1,bi,bj) = addMass(di,dj,k-1,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+1,bi,bj) = addMass(di,dj,k+1,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+2,bi,bj) = addMass(di,dj,k+2,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                  ENDIF
+
+              ENDDO
+             ENDDO
+
+
+             DO di = I-12,I+12
+                 DO dj =NINT(J-sqrt(144.-(di-I)**2.)),
+     &                  NINT(J+sqrt(144.-(di-I)**2.)) 
+                  IF ( k .LT. 3 .OR. k .GT. Nr-2) THEN
+
+                 addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .2*volFLuxDiff(k)*1000./334.75 
+                  ELSE
+                addMass(di,dj,k-2,bi,bj) = addMass(di,dj,k-2,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k-1,bi,bj) = addMass(di,dj,k-1,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+1,bi,bj) = addMass(di,dj,k+1,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+2,bi,bj) = addMass(di,dj,k+2,bi,bj)+ 
+     &                                    .04*volFLuxDiff(k)*1000./334.75
+                  ENDIF
+
+              ENDDO
+             ENDDO
+
+
+             DO di = I-10,I+10
+                 DO dj =NINT(J-sqrt(100.-(di-I)**2.)),
+     &                  NINT(J+sqrt(100.-(di-I)**2.)) 
+                  IF ( k .LT. 3 .OR. k .GT. Nr-2) THEN
+
+                 addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .3*volFLuxDiff(k)*1000./334.75 
+                  ELSE
+                addMass(di,dj,k-2,bi,bj) = addMass(di,dj,k-2,bi,bj)+ 
+     &                                    .06*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k-1,bi,bj) = addMass(di,dj,k-1,bi,bj)+ 
+     &                                    .06*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k,bi,bj) = addMass(di,dj,k,bi,bj)+ 
+     &                                    .06*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+1,bi,bj) = addMass(di,dj,k+1,bi,bj)+ 
+     &                                    .06*volFLuxDiff(k)*1000./334.75
+                addMass(di,dj,k+2,bi,bj) = addMass(di,dj,k+2,bi,bj)+ 
+     &                                    .06*volFLuxDiff(k)*1000./334.75
+                  ENDIF
+
+              ENDDO
+             ENDDO
+
+
+            ENDDO !K loop
+
+
+        
+         ENDIF
 
          ENDIF ! plumeMask .NE. 0
+        
 
 C DO J loop
 	 ENDDO
